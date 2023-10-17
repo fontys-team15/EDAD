@@ -11,28 +11,6 @@ provider "aws" {
   region = "eu-central-1"
 }
 
-
-data "aws_ami" "ubuntu" {
-    most_recent = true
-    owners = ["099720109477"]
-
-    filter {
-        name = "name"
-        values = ["ubuntu/images/hvm-ssd/*-20.04-amd64-server-*"]
-    }
-
-    filter {
-        name = "root-device-type"
-        values = ["ebs"]
-    }
-
-    filter {
-        name = "architecture"
-        values = ["x86_64"]
-    }
-}
-
-
 # ------- #
 # VPC     #
 # ------- #
@@ -581,70 +559,81 @@ resource "aws_key_pair" "admin_key" {
 # EC2 #
 # --- #
 
-resource "aws_instance" "web1a_i" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  availability_zone = "eu-central-1a"
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
-  key_name = aws_key_pair.admin_key.key_name
-  subnet_id = aws_subnet.web1a_subnet.id
+# resource "aws_instance" "web1a_i" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   availability_zone = "eu-central-1a"
+#   vpc_security_group_ids = [aws_security_group.web_sg.id]
+#   key_name = aws_key_pair.admin_key.key_name
+#   subnet_id = aws_subnet.web1a_subnet.id
 
+#   tags = {
+#     Name = "web1a_i"
+#   }
+# }
+
+# resource "aws_instance" "web1b_i" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   availability_zone = "eu-central-1b"
+#   vpc_security_group_ids = [aws_security_group.web_sg.id]
+#   key_name = aws_key_pair.admin_key.key_name
+#   subnet_id = aws_subnet.web1b_subnet.id
+
+#   tags = {
+#     Name = "web1b_i"
+#   }
+# }
+
+# resource "aws_instance" "web1c_i" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   availability_zone = "eu-central-1c"
+#   vpc_security_group_ids = [aws_security_group.web1c_sg.id]
+#   key_name = aws_key_pair.admin_key.key_name
+#   subnet_id = aws_subnet.web1c_subnet.id
+#   associate_public_ip_address = true
+
+#   tags = {
+#     Name = "web1c_i"
+#   }
+# }
+
+# # ao instances
+# resource "aws_instance" "ao1a_i" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   availability_zone = "eu-central-1a"
+#   vpc_security_group_ids = [aws_security_group.ao_sg.id]
+#   key_name = aws_key_pair.admin_key.key_name
+#   subnet_id = aws_subnet.ao1a_subnet.id
+
+#   tags = {
+#     Name = "ao1a_i"
+#   }
+# }
+
+# resource "aws_instance" "ao1b_i" {
+#   ami           = data.aws_ami.ubuntu.id
+#   instance_type = "t2.micro"
+#   availability_zone = "eu-central-1b"
+#   vpc_security_group_ids = [aws_security_group.ao_sg.id]
+#   key_name = aws_key_pair.admin_key.key_name
+#   subnet_id = aws_subnet.ao1b_subnet.id
+
+#   tags = {
+#     Name = "ao1b_i"
+#   }
+# }
+
+//add VPC stuff
+resource "aws_instance" "machines" {
+  instance_type      = "t2.micro"
+  ami                = data.aws_ami.ubuntu.id
+  for_each = var.AZ-ec2_name
+  availability_zone = each.value
   tags = {
-    Name = "web1a_i"
-  }
-}
-
-resource "aws_instance" "web1b_i" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  availability_zone = "eu-central-1b"
-  vpc_security_group_ids = [aws_security_group.web_sg.id]
-  key_name = aws_key_pair.admin_key.key_name
-  subnet_id = aws_subnet.web1b_subnet.id
-
-  tags = {
-    Name = "web1b_i"
-  }
-}
-
-resource "aws_instance" "web1c_i" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  availability_zone = "eu-central-1c"
-  vpc_security_group_ids = [aws_security_group.web1c_sg.id]
-  key_name = aws_key_pair.admin_key.key_name
-  subnet_id = aws_subnet.web1c_subnet.id
-  associate_public_ip_address = true
-
-  tags = {
-    Name = "web1c_i"
-  }
-}
-
-# ao instances
-resource "aws_instance" "ao1a_i" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  availability_zone = "eu-central-1a"
-  vpc_security_group_ids = [aws_security_group.ao_sg.id]
-  key_name = aws_key_pair.admin_key.key_name
-  subnet_id = aws_subnet.ao1a_subnet.id
-
-  tags = {
-    Name = "ao1a_i"
-  }
-}
-
-resource "aws_instance" "ao1b_i" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
-  availability_zone = "eu-central-1b"
-  vpc_security_group_ids = [aws_security_group.ao_sg.id]
-  key_name = aws_key_pair.admin_key.key_name
-  subnet_id = aws_subnet.ao1b_subnet.id
-
-  tags = {
-    Name = "ao1b_i"
+    Name = each.key
   }
 }
 
