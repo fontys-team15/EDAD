@@ -11,6 +11,10 @@ provider "aws" {
   region = "eu-central-1"
 }
 
+locals {
+  region = "eu-central"
+}
+
 # ------- #
 # VPC     #
 # ------- #
@@ -627,11 +631,11 @@ resource "aws_key_pair" "admin_key" {
 # }
 
 //add VPC stuff
-resource "aws_instance" "machines" {
-  instance_type      = "t2.micro"
-  ami                = data.aws_ami.ubuntu.id
-  for_each = var.AZ-ec2_name
-  availability_zone = each.value
+resource "aws_instance" "dynamic_ec2" {
+  for_each = {for ec in var.ec2 : "${ec.service}-${ec.zone}_ec2" => ec}
+  ami = data.aws_ami.ubuntu.id
+  instance_type = each.value.instance_type
+  availability_zone = "${local.region}-${each.value.zone}"
   tags = {
     Name = each.key
   }
