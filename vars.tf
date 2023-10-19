@@ -54,3 +54,23 @@ variable "ec2" {
     zone = string  # e.g., "1a", "1b", "1c"
   }))
 }
+
+# gateways
+variable "igw" {
+  type = list(object({
+    vpc = string
+  }))
+}
+
+variable "ngw" {
+  type = list(object({
+    vpc = string
+  }))
+}
+
+variable "pcx" {
+  type = list(object({
+    peer_vpc = string
+    vpc = string
+  }))
+}

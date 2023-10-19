@@ -39,9 +39,54 @@ resource "aws_vpc" "vpc" {
 resource "aws_subnet" "subnets" {
   for_each = { for s in var.subnets : "${s.vpc}_${s.service}-${s.zone}${s.public ? "_pub" : ""}_subnet" => s }
 
-  vpc_id            = local.vpc_mapping[each.value.vpc].id
-  cidr_block        = each.value.cidr_block
+  vpc_id = local.vpc_mapping[each.value.vpc].id
+  cidr_block = each.value.cidr_block
   availability_zone = "${local.region}-${each.value.zone}"
+  
+  tags = {
+    Name = each.key
+  }
+}
+
+
+# --- #
+# EIP #
+# --- #
+
+resource "aws_eip" "ao_ngw_eip" {
+  domain   = "vpc"
+}
+
+resource "aws_eip" "web_ngw_eip" {
+  domain   = "vpc"
+}
+
+
+# -------- #
+# Gateways #
+# -------- #
+
+resource "aws_internet_gateway" "igw" {
+  for_each = { for igw in var.igw : "${igw.vpc}_igw" => igw }
+  vpc_id = local.vpc_mapping[each.value.vpc].id
+  
+  tags = {
+    Name = each.key
+  }
+}
+
+resource "aws_internet_gateway" "ngw" {
+  for_each = { for ngw in var.ngw : "${ngw.vpc}_ngw" => ngw }
+  vpc_id = local.vpc_mapping[each.value.vpc].id
+  
+  tags = {
+    Name = each.key
+  }
+}
+
+resource "aws_internet_gateway" "pcx" {
+  for_each = { for pcx in var.pcx : "${pcx.peer_vpc}_${pcx.vpc}_pcx" => pcx }
+  vpc_id = local.vpc_mapping[each.value.vpc].id
   
   tags = {
     Name = each.key
