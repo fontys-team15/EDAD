@@ -1,4 +1,5 @@
-  data "aws_ami" "ubuntu" {
+data "aws_ami" "ubuntu" {
+
     most_recent = true
     owners = ["099720109477"]
     
@@ -17,6 +18,7 @@
         values = ["x86_64"]
     }
 }
+
 
 variable "ec2" {
   type = list(object({
