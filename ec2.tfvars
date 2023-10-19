@@ -1,29 +1,34 @@
 ec2 = [ 
     # web
     {
-        service = "web"
+        vpc = "web"
+        service = "web1"
         zone = "1a"
         instance_type = "t2.micro"
     },
     {
-        service = "web"
+        vpc = "web"
+        service = "web2"
         zone = "1b"
         instance_type = "t2.micro"
     },
     {
-        service = "web"
+        vpc = "web"
+        service = "bastion"
         zone = "1c"
         instance_type = "t2.micro"
 
     }, 
     # ao
     {
-        service = "ao"
+        vpc = "ao"
+        service = "terraform"
         zone = "1a"
         instance_type = "t2.micro"
     },
     {
-        service = "ao"
+        vpc = "ao"
+        service = "ansible"
         zone = "1b"
         instance_type = "t2.micro"
 

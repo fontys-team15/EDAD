@@ -13,9 +13,10 @@ provider "aws" {
 
 
 locals {
-  vpc_mapping = { for k, v in aws_vpc.vpc : k => v.id }
+  vpc_mapping = { for k, v in aws_vpc.vpc : k => v }
   region = "eu-central"
 }
+
 
 # ------- #
 # VPC     #
@@ -30,29 +31,47 @@ resource "aws_vpc" "vpc" {
   }
 }
 
+
 # ------- #
 # Subnets #
 # ------- #
 
-resource "aws_subnet" "subnet" {
-  for_each = { for s in var.subnets : "${s.service}${s.zone}_${s.public ? "pub" : ""}_subnet" => s }
+resource "aws_subnet" "subnets" {
+  for_each = { for s in var.subnets : "${s.vpc}_${s.service}-${s.zone}${s.public ? "_pub" : ""}_subnet" => s }
 
-
-  vpc_id            = lookup(local.vpc_mapping, each.value.service)
+  vpc_id            = local.vpc_mapping[each.value.vpc].id
   cidr_block        = each.value.cidr_block
   availability_zone = "${local.region}-${each.value.zone}"
-
+  
   tags = {
     Name = each.key
   }
 }
 
-//add VPC stuff
-resource "aws_instance" "dynamic_ec2" {
+
+# --- #
+# SSH #
+# --- #
+resource "aws_key_pair" "admin_key" {
+  key_name   = "admin_key"
+  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOp3Jjx+TyaSEssPN8A7XE5Y75HGDgYQDpUfD5afMaJ0 crhackaddict@msigmachine"
+}
+
+
+# --- #
+# EC2 #
+# --- #
+
+//add VPC association
+resource "aws_instance" "ec2" {
   for_each = {for ec in var.ec2 : "${ec.service}-${ec.zone}_ec2" => ec}
+
   ami = data.aws_ami.ubuntu.id
   instance_type = each.value.instance_type
   availability_zone = "${local.region}-${each.value.zone}"
+
+  vpc_security_group_ids = []
+  key_name = aws_key_pair.admin_key.key_name
 
   tags = {
     Name = each.key

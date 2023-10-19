@@ -37,17 +37,20 @@ variable "vpc" {
 # subnets
 variable "subnets" {
   type = list(object({
-    service = string  # e.g., "web", "rds", "ao"
-    cidr_block = string
+    vpc = string  # e.g., "web", "ao", "rds"
+    service = string  # e.g., "ws", "bh", "tf", "ansbl"
+    cidr_block = string  
     zone = string  # e.g., "1a", "1b", "1c"
     public = bool    # e.g., true or false
   }))
 }
 
+# EC2
 variable "ec2" {
   type = list(object({
-  instance_type = string
-  service = string #web ,ao, rds
-  zone = string  # 1a, 1b, 1c
+    instance_type = string
+    vpc = string  # e.g., "web", "ao", "rds"
+    service = string  # e.g., "ws", "bh", "tf", "ansbl"
+    zone = string  # e.g., "1a", "1b", "1c"
   }))
-} 
+}
