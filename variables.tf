@@ -1,4 +1,5 @@
 data "aws_ami" "ubuntu" {
+
     most_recent = true
     owners = ["099720109477"]
     
@@ -18,14 +19,11 @@ data "aws_ami" "ubuntu" {
     }
 }
 
-variable "AZ-ec2_name" {
-  description = "availability zones-and machines in them"
-  type = map
-  default = {
-    "webserver-1" = "eu-central-1a"
-    "websever-2" = "eu-central-1b"
-    "bastion" =  "eu-central-1c"
-    "Ansible-node" = "eu-central-1a"
-    "Terraform-node" = "eu-central-1b" 
-  }
-}
+
+variable "ec2" {
+  type = list(object({
+  instance_type = string
+  service = string #web ,Ansible, Terraform
+  zone = string  # 1a, 1b, 1c
+  }))
+} 
