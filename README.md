@@ -9,9 +9,12 @@
 
 **SERVICES**: `ws` (web server), `bh` (bastion host), `tf` (Terraform), `ansbl` (Ansible), `db`, `nat`, `pcx`
 
+#### IMPORTANT: every resource that needs to reference one of the above (subnets, route tables, VPCs) should include the following attributes in the its variable block: vpc, service, zone, public (optional)
+
+
 ## Variable Convention
 
-Prefer `map()` over `list()`.
+`map()` over `list()`.
 
 This is because when using the `for_each` meta-argument Terraform automatically assigns an identifier to each instance based on the keys in the provided "collection". The difference between using maps over lists is that the keys of a map can be way more descriptive unlike the values of a list (Terraform will convert each item in the list to a string and use that as the identifier → not ideal identifier).
 
@@ -30,7 +33,7 @@ variable "subnets" {
   }))
 }
 ```
-In the main.tf file there are the following blocks:
+In the `main.tf` file there are the following blocks:
 
 ```hcl
 ...
