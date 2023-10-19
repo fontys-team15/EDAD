@@ -55,6 +55,12 @@ variable "ec2" {
   }))
 }
 
+
+variable "eip" {
+  type = list(string)
+  default = [ "web_ngw_eip", "ao_ngw_eip" ]
+}
+
 # gateways
 variable "igw" {
   type = list(object({
@@ -65,6 +71,9 @@ variable "igw" {
 variable "ngw" {
   type = list(object({
     vpc = string
+    service = string
+    zone = string
+    public = bool
   }))
 }
 

@@ -14,6 +14,8 @@ provider "aws" {
 
 locals {
   vpc_mapping = { for k, v in aws_vpc.vpc : k => v }
+  eip_mapping = { for k, v in aws_eip.eip : k => v }
+  subnet_mapping = { for k, v in aws_subnet.subnets : k => v }
   region = "eu-central"
 }
 
@@ -53,11 +55,8 @@ resource "aws_subnet" "subnets" {
 # EIP #
 # --- #
 
-resource "aws_eip" "ao_ngw_eip" {
-  domain   = "vpc"
-}
-
-resource "aws_eip" "web_ngw_eip" {
+resource "aws_eip" "eip" {
+  for_each = toset(var.eip)
   domain   = "vpc"
 }
 
@@ -75,17 +74,20 @@ resource "aws_internet_gateway" "igw" {
   }
 }
 
-resource "aws_internet_gateway" "ngw" {
+resource "aws_nat_gateway" "ngw" {
   for_each = { for ngw in var.ngw : "${ngw.vpc}_ngw" => ngw }
-  vpc_id = local.vpc_mapping[each.value.vpc].id
-  
+
+  allocation_id = local.eip_mapping["${each.value.vpc}_ngw_eip"].id
+  subnet_id     = local.subnet_mapping["${each.value.vpc}_${each.value.service}-${each.value.zone}${each.value.public ? "_pub" : ""}_subnet"].id
+
   tags = {
     Name = each.key
   }
 }
 
-resource "aws_internet_gateway" "pcx" {
+resource "aws_vpc_peering_connection" "pcx" {
   for_each = { for pcx in var.pcx : "${pcx.peer_vpc}_${pcx.vpc}_pcx" => pcx }
+  peer_vpc_id = local.vpc_mapping[each.value.peer_vpc].id
   vpc_id = local.vpc_mapping[each.value.vpc].id
   
   tags = {

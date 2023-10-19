@@ -10,9 +10,15 @@ igw = [
 ngw = [
     {
         vpc = "web"
+        service = "bh"
+        zone = "1c"
+        public = true
     },
     {
         vpc = "ao"
+        service = "nat"
+        zone = "1c"
+        public = true
     }
 ]
 
