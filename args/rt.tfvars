@@ -67,7 +67,7 @@ rt = [
     },
     {
         vpc = "rds"
-        service = "ws"
+        service = "rds"
         rule = [ {
             vpc_cidr = true
             cidr_block = "rds"
