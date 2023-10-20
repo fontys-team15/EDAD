@@ -15,14 +15,14 @@ subnets = [
     },
     {
         vpc = "web"
-        service = "ws"
+        service = "alb"
         cidr_block = "10.0.4.0/24"
         zone = "1a"
         public = true
     },
     {
         vpc = "web"
-        service = "ws"
+        service = "alb"
         cidr_block = "10.0.3.0/24"
         zone = "1b"
         public = true
