@@ -1,8 +1,14 @@
 terraform {
+  cloud {
+    organization = "Fontys-learning"
+    workspaces {
+      name = "ASSmgt"
+    }
+  }
   required_providers {
-    aws = {
+     aws = {
       source = "hashicorp/aws"
-      version = "5.20.1"
+      version = "5.19.0"
     }
   }
 }
@@ -15,13 +21,14 @@ provider "aws" {
 locals {
   vpc_mapping = { for k, v in aws_vpc.vpc : k => v }
   subnet_mapping = { for k, v in aws_subnet.subnets : k => v }
+  subnet_cidr = { for k, v in aws_subnet.subnets : k => v.cidr_block }
   gateway_mappings = {
     eip  = { for k, v in aws_eip.eip : k => v.id },
     igw  = { for k, v in aws_internet_gateway.igw : k => v.id },
     pcx  = { for k, v in aws_vpc_peering_connection.pcx : k => v.id }    
   }
   ngw  = { for k, v in aws_nat_gateway.ngw : k => v.id }
-
+  sg_mapping = { for k, v in aws_security_group.sg : k => v }
   region = "eu-central"
 }
 
@@ -136,6 +143,31 @@ resource "aws_route_table_association" "rt_ex" {
   for_each = { for ert in var.rt_ex : "${ert.vpc}_${ert.service}${ert.zone}_ex_rt" => ert }
   subnet_id = local.subnet_mapping["${each.value.vpc}_${each.value.service}-${each.value.zone}${each.value.public ? "_pub" : ""}_subnet"].id
   route_table_id = aws_route_table.rt["${each.value.vpc}_${each.value.service}_rt"].id
+}
+
+
+resource "aws_security_group" "sg" {
+  for_each = { for sg in var.sg : "${sg.vpc}_${sg.service}_sg" => sg}
+  vpc_id = local.vpc_mapping[each.value.vpc].id
+
+  dynamic "ingress" {
+    for_each = each.value.ingress
+    content {
+      from_port = ingress.value.from_port
+      to_port = ingress.value.to_port
+      protocol = ingress.value.protocol
+      cidr_blocks = [ingress.value.vpc_cidr ? local.vpc_mapping[ingress.value.vpcl].cidr_block : lookup(local.subnet_cidr,"${ingress.value.vpcl}_${ingress.value.servicel}-${ingress.value.zone}${ingress.value.public ? "_pub" : ""}_subnet",ingress.value.cidr)]
+    }
+  }
+  dynamic "egress" {
+    for_each = each.value.egress
+    content {
+      from_port = egress.value.from_port
+      to_port = egress.value.to_port
+      protocol = egress.value.protocol
+      cidr_blocks = [egress.value.vpc_cidr ? local.vpc_mapping[egress.value.vpcl].cidr_block : lookup(local.subnet_cidr,"${egress.value.vpcl}_${egress.value.servicel}-${egress.value.zone}${egress.value.public ? "_pub" : ""}_subnet",egress.value.cidr)]
+    }
+  }
 }
 
 

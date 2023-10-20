@@ -115,3 +115,32 @@ variable "rt_ex" {
     public = bool
   }))
 }
+
+variable "sg" {
+  type = list(object({ 
+    vpc = string
+    service = string
+    ingress = list(object({
+      vpcl = string
+      servicel = string
+      public = bool
+      zone = string
+      vpc_cidr = bool
+      cidr = string
+      from_port = number
+      to_port = number
+      protocol = string
+    }))
+    egress = list(object({
+      vpcl = string
+      servicel = string
+      vpc_cidr = bool
+      public = bool
+      zone = string
+      cidr = string
+      from_port = number
+      to_port = number
+      protocol = string
+    }))  
+  }))
+}
