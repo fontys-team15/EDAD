@@ -122,13 +122,31 @@ resource "aws_route_table" "rt" {
 }
 
 
+# --------------------------- #
+# Routing tables associations #
+# --------------------------- #
+
+resource "aws_main_route_table_association" "rt_main" {
+  for_each = { for mrt in var.rt_main : "${mrt.vpc}_main_rt" => mrt }
+  vpc_id = local.vpc_mapping[each.value.vpc].id
+  route_table_id = aws_route_table.rt["${each.value.vpc}_${each.value.service}_rt"].id
+}
+
+resource "aws_route_table_association" "rt_ex" {
+  for_each = { for ert in var.rt_ex : "${ert.vpc}_${ert.service}${ert.zone}_ex_rt" => ert }
+  subnet_id = local.subnet_mapping["${each.value.vpc}_${each.value.service}-${each.value.zone}${each.value.public ? "_pub" : ""}_subnet"].id
+  route_table_id = aws_route_table.rt["${each.value.vpc}_${each.value.service}_rt"].id
+}
+
+
 # --- #
 # SSH #
 # --- #
-resource "aws_key_pair" "admin_key" {
-  key_name   = "admin_key"
-  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOp3Jjx+TyaSEssPN8A7XE5Y75HGDgYQDpUfD5afMaJ0 crhackaddict@msigmachine"
-}
+
+# resource "aws_key_pair" "admin_key" {
+#   key_name   = "admin_key"
+#   public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOp3Jjx+TyaSEssPN8A7XE5Y75HGDgYQDpUfD5afMaJ0 crhackaddict@msigmachine"
+# }
 
 
 # --- #
@@ -136,17 +154,17 @@ resource "aws_key_pair" "admin_key" {
 # --- #
 
 //add VPC association
-resource "aws_instance" "ec2" {
-  for_each = {for ec in var.ec2 : "${ec.service}-${ec.zone}_ec2" => ec}
+# resource "aws_instance" "ec2" {
+#   for_each = {for ec in var.ec2 : "${ec.service}-${ec.zone}_ec2" => ec}
 
-  ami = data.aws_ami.ubuntu.id
-  instance_type = each.value.instance_type
-  availability_zone = "${local.region}-${each.value.zone}"
+#   ami = data.aws_ami.ubuntu.id
+#   instance_type = each.value.instance_type
+#   availability_zone = "${local.region}-${each.value.zone}"
 
-  vpc_security_group_ids = []
-  key_name = aws_key_pair.admin_key.key_name
+#   vpc_security_group_ids = []
+#   key_name = aws_key_pair.admin_key.key_name
 
-  tags = {
-    Name = each.key
-  }
-}
+#   tags = {
+#     Name = each.key
+#   }
+# }

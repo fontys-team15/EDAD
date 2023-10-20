@@ -97,3 +97,21 @@ variable "rt" {
     }))
   }))
 }
+
+# rt associations
+# main
+variable "rt_main" {
+  type = list(object({
+    vpc = string
+    service = string
+  }))
+}
+# explicit associations
+variable "rt_ex" {
+  type = list(object({
+    vpc = string
+    service = string
+    zone = string
+    public = bool
+  }))
+}
