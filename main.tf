@@ -14,8 +14,14 @@ provider "aws" {
 
 locals {
   vpc_mapping = { for k, v in aws_vpc.vpc : k => v }
-  eip_mapping = { for k, v in aws_eip.eip : k => v }
   subnet_mapping = { for k, v in aws_subnet.subnets : k => v }
+  gateway_mappings = {
+    eip  = { for k, v in aws_eip.eip : k => v.id },
+    igw  = { for k, v in aws_internet_gateway.igw : k => v.id },
+    pcx  = { for k, v in aws_vpc_peering_connection.pcx : k => v.id }    
+  }
+  ngw  = { for k, v in aws_nat_gateway.ngw : k => v.id }
+
   region = "eu-central"
 }
 
@@ -77,12 +83,13 @@ resource "aws_internet_gateway" "igw" {
 resource "aws_nat_gateway" "ngw" {
   for_each = { for ngw in var.ngw : "${ngw.vpc}_ngw" => ngw }
 
-  allocation_id = local.eip_mapping["${each.value.vpc}_ngw_eip"].id
+  allocation_id = lookup(local.gateway_mappings["eip"], "${each.value.vpc}_ngw_eip")
   subnet_id     = local.subnet_mapping["${each.value.vpc}_${each.value.service}-${each.value.zone}${each.value.public ? "_pub" : ""}_subnet"].id
 
   tags = {
     Name = each.key
   }
+  # depends_on = [ aws_internet_gateway.igw, aws_eip.eip ]
 }
 
 resource "aws_vpc_peering_connection" "pcx" {
@@ -92,6 +99,25 @@ resource "aws_vpc_peering_connection" "pcx" {
   
   tags = {
     Name = each.key
+  }
+}
+
+
+# -------------- #
+# Rouging tables #
+# -------------- #
+
+resource "aws_route_table" "rt" {
+  for_each = { for t in var.rt : "${t.vpc}_${t.service}_rt" => t }
+  vpc_id = local.vpc_mapping[each.value.vpc].id
+
+  dynamic "route" {
+    for_each = each.value.rule
+    content {
+      cidr_block = route.value.vpc_cidr ? local.vpc_mapping[route.value.cidr_block].cidr_block : route.value.cidr_block # because vpc_mapping contains multiple attributes
+      gateway_id = route.value.gateway_type != "ngw" ? lookup(local.gateway_mappings[route.value.gateway_type], route.value.gateway_id, "local") : lookup(local.ngw, route.value.gateway_id, "local")
+
+    }
   }
 }
 

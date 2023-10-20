@@ -83,3 +83,17 @@ variable "pcx" {
     vpc = string
   }))
 }
+
+# rt
+variable "rt" {
+  type = list(object({
+    vpc = string
+    service = string
+    rule = list(object({
+      vpc_cidr = bool
+      cidr_block = string # e.g. web, ao, rds, 0.0.0.0/0
+      gateway_type = string # e.g. ngw, igw, pcx
+      gateway_id = string
+    }))
+  }))
+}
