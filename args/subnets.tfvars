@@ -50,14 +50,14 @@ subnets = [
     }, #ao
     {
         vpc = "ao"
-        service = "tf"
+        service = "ao"
         cidr_block = "192.168.0.0/28"
         zone = "1a"
         public = false
     },
     {
         vpc = "ao"
-        service = "ansbl"
+        service = "ao"
         cidr_block = "192.168.0.16/28"
         zone = "1b"
         public = false

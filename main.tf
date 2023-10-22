@@ -1,14 +1,8 @@
 terraform {
-  cloud {
-    organization = "Fontys-learning"
-    workspaces {
-      name = "ASSmgt"
-    }
-  }
   required_providers {
-     aws = {
+    aws = {
       source = "hashicorp/aws"
-      version = "5.19.0"
+      version = "5.22.0"
     }
   }
 }
@@ -146,6 +140,10 @@ resource "aws_route_table_association" "rt_ex" {
 }
 
 
+# --------------- #
+# Security groups #
+# --------------- #
+
 resource "aws_security_group" "sg" {
   for_each = { for sg in var.sg : "${sg.vpc}_${sg.service}_sg" => sg}
   vpc_id = local.vpc_mapping[each.value.vpc].id
@@ -175,28 +173,109 @@ resource "aws_security_group" "sg" {
 # SSH #
 # --- #
 
-# resource "aws_key_pair" "admin_key" {
-#   key_name   = "admin_key"
-#   public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOp3Jjx+TyaSEssPN8A7XE5Y75HGDgYQDpUfD5afMaJ0 crhackaddict@msigmachine"
-# }
+resource "aws_key_pair" "admin_key" {
+  key_name   = "admin_key"
+  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOp3Jjx+TyaSEssPN8A7XE5Y75HGDgYQDpUfD5afMaJ0 crhackaddict@msigmachine"
+}
 
 
 # --- #
 # EC2 #
 # --- #
 
-//add VPC association
-# resource "aws_instance" "ec2" {
-#   for_each = {for ec in var.ec2 : "${ec.service}-${ec.zone}_ec2" => ec}
+resource "aws_instance" "ec2_i" {
+  for_each = {for ec in var.ec2 : "${ec.service}-${ec.zone}_ec2" => ec}
 
-#   ami = data.aws_ami.ubuntu.id
-#   instance_type = each.value.instance_type
-#   availability_zone = "${local.region}-${each.value.zone}"
+  ami = data.aws_ami.ubuntu.id
+  instance_type = each.value.instance_type
+  availability_zone = "${local.region}-${each.value.zone}"
+  associate_public_ip_address = each.value.public_ip
 
-#   vpc_security_group_ids = []
-#   key_name = aws_key_pair.admin_key.key_name
+  vpc_security_group_ids = [local.sg_mapping["${each.value.vpc}_${each.value.service}_sg"].id]
+  subnet_id = aws_subnet.subnets["${each.value.vpc}_${each.value.service}-${each.value.zone}${each.value.public_subnet ? "_pub" : ""}_subnet"].id
+  key_name = aws_key_pair.admin_key.key_name
 
-#   tags = {
-#     Name = each.key
-#   }
-# }
+  tags = {
+    Name = each.key
+  }
+}
+
+
+# --- #
+# ALB #
+# --- #
+
+resource "aws_lb_target_group" "alb_tg" {
+  name     = "alb-tg"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.vpc["web"].id
+}
+
+resource "aws_lb_target_group_attachment" "ws-1a_tg_attch" {
+  target_group_arn = aws_lb_target_group.alb_tg.arn
+  target_id        = aws_instance.ec2_i["ws-1a_ec2"].id
+  port             = 80
+}
+
+resource "aws_lb_target_group_attachment" "ws-1b_tg_attch" {
+  target_group_arn = aws_lb_target_group.alb_tg.arn
+  target_id        = aws_instance.ec2_i["ws-1b_ec2"].id
+  port             = 80
+}
+
+resource "aws_lb_listener" "front_end" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.alb_tg.arn
+  }
+}
+
+resource "aws_lb" "alb" {
+  name               = "alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.sg["web_alb_sg"].id]
+  subnets            = [aws_subnet.subnets["web_alb-1a_pub_subnet"].id, aws_subnet.subnets["web_alb-1b_pub_subnet"].id]
+
+  enable_deletion_protection = false
+}
+
+
+# --- #
+# RDS #
+# --- #
+
+resource "aws_db_subnet_group" "default" {
+  name       = "main"
+  subnet_ids = [aws_subnet.subnets["rds_db-1a_subnet"].id, aws_subnet.subnets["rds_db-1b_subnet"].id]
+
+  tags = {
+    Name = "My DB subnet group"
+  }
+}
+
+resource "aws_db_instance" "rds" {
+  allocated_storage    = 20
+  db_name              = "mydb"
+  engine               = "mysql"
+  instance_class       = "db.t3.micro"
+  username             = "admin"
+  password             = "qwert1234"
+  skip_final_snapshot  = true
+
+  storage_type = "gp2"
+  multi_az = true
+  delete_automated_backups = true
+
+  vpc_security_group_ids = [aws_security_group.sg["rds_rds_sg"].id]
+  db_subnet_group_name = aws_db_subnet_group.default.name
+
+  tags = {
+    Name = "rds"
+  }
+}

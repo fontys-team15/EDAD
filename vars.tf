@@ -52,6 +52,8 @@ variable "ec2" {
     vpc = string  # e.g., "web", "ao", "rds"
     service = string  # e.g., "ws", "bh", "tf", "ansbl"
     zone = string  # e.g., "1a", "1b", "1c"
+    public_ip = bool
+    public_subnet = bool
   }))
 }
 
