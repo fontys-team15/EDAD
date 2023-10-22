@@ -7,7 +7,7 @@
 
 **VPCs**: `web`, `ao`, `rds`
 
-**SERVICES**: `ws` (web server), `bh` (bastion host), `tf` (Terraform), `ansbl` (Ansible), `db`, `nat`, `pcx`
+**SERVICES**: `ws` (web server), `ao` (automation and orchestration), `rds`, `bh` (bastion host), `db`, `nat`
 
 #### IMPORTANT: every resource that needs to reference one of the above (subnets, route tables, VPCs) should include the following attributes in the its variable block: vpc, service, zone, public (optional)
 
