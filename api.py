@@ -48,12 +48,14 @@ class User(db.Model):
         return User.query.get(data['id'])
 
 
+@app.before_request
+def print_ascii_art():
+    print(pyfiglet.figlet_format("u mirin bru?"))
+  
 @auth.verify_password
 def verify_password(username_or_token, password):
-    # first try to authenticate by token
     user = User.verify_auth_token(username_or_token)
     if not user:
-        # try to authenticate with username/password
         user = User.query.filter_by(username=username_or_token).first()
         if not user or not user.verify_password(password):
             return False
@@ -66,22 +68,22 @@ def new_user():
     username = request.json.get('username')
     password = request.json.get('password')
     if username is None or password is None:
-        abort(400)    # missing arguments
+        return (jsonify({"message": "Missing arguments!"}))
     if User.query.filter_by(username=username).first() is not None:
-        abort(400)    # existing user
+        return (jsonify({'message': "User already exists!"}))    
     user = User(username=username)
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
-    return (jsonify({'username': user.username}), 201,
+    token = user.generate_auth_token(600)
+    return (jsonify({'message': f"Welcome {user.username}!Please remember ", 'token': token, 'duration': 600  }), 201,
             {'Location': url_for('get_user', id=user.id, _external=True)})
-
 
 @app.route('/api/users/<int:id>')
 def get_user(id):
     user = User.query.get(id)
     if not user:
-        abort(400)
+        return jsonify({"message": "User id doesnt exist!"})
     return jsonify({'username': user.username})
 
 
