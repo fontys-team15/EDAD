@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os
 import time
+import json
 from flask import Flask, abort, request, jsonify, g, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
@@ -17,6 +18,8 @@ app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 db = SQLAlchemy(app)
 auth = HTTPBasicAuth()
 
+# vars
+template_keys = ["name", "instance_type", "associate_pub_ip"]
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -86,13 +89,19 @@ def get_user(id):
 @auth.login_required
 def get_auth_token():
     token = g.user.generate_auth_token(600)
-    return jsonify({'token': token.decode('ascii'), 'duration': 600})
+    return jsonify({'token': token, 'duration': 600})
 
 
-@app.route('/api/resource')
+@app.route('/api/resource', methods=["POST"])
 @auth.login_required
 def get_resource():
-    return jsonify({'data': 'Hello, %s!' % g.user.username})
+    data = request.get_json()
+    for key in data.keys():
+        if key not in template_keys:
+            return jsonify({"message": f"Invalid key: {key}"})
+    print(json.dumps(data, indent=4, sort_keys=True))
+
+    return jsonify({'data': f'Hello, {g.user.username}! The request was successful!'})
 
 
 if __name__ == '__main__':
