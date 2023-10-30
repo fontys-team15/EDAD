@@ -2,6 +2,7 @@
 import os
 import time
 import json
+import pyfiglet
 from flask import Flask, abort, request, jsonify, g, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
@@ -11,7 +12,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # initialization
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'the quick brown fox jumps over the lazy dog'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123@127.0.0.1:3306/mydb'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 
 # extensions
@@ -68,9 +69,9 @@ def new_user():
     username = request.json.get('username')
     password = request.json.get('password')
     if username is None or password is None:
-        return (jsonify({"message": "Missing arguments!"}))
+        return (jsonify({"message": "Missing arguments!"})), 401
     if User.query.filter_by(username=username).first() is not None:
-        return (jsonify({'message': "User already exists!"}))    
+        return (jsonify({'message': "User already exists!"})), 409
     user = User(username=username)
     user.hash_password(password)
     db.session.add(user)
@@ -79,11 +80,19 @@ def new_user():
     return (jsonify({'message': f"Welcome {user.username}!Please remember ", 'token': token, 'duration': 600  }), 201,
             {'Location': url_for('get_user', id=user.id, _external=True)})
 
+
+@app.route('/api/users/rm', methods=['DELETE'])
+@auth.login_required
+def remove_user():
+    db.session.delete(g.user)
+    db.session.commit()
+    return jsonify({"message": "Successfully unregistered"}), 200
+
 @app.route('/api/users/<int:id>')
 def get_user(id):
     user = User.query.get(id)
     if not user:
-        return jsonify({"message": "User id doesnt exist!"})
+        return jsonify({"message": "User id doesnt exist!"}), 401
     return jsonify({'username': user.username})
 
 
@@ -107,6 +116,6 @@ def get_resource():
 
 
 if __name__ == '__main__':
-    if not os.path.exists('db.sqlite'):
+    if not db.engine.has_table('users'):
         db.create_all()
     app.run(debug=True)

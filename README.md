@@ -28,4 +28,9 @@ To post your settings use the following command:
 ```
 curl -u <your username | token>:<your password | x> --json @yourfile.json http://url/api/resource
 ```
+### Unregister a User under `/api/users/rm`
+Using the following command:
+```
+curl -u <your username | token>:<your password | x> -X DELETE http://url/api/users/rm
+```
 
