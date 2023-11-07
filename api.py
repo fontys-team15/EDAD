@@ -118,4 +118,4 @@ def get_resource():
 if __name__ == '__main__':
     if not db.engine.has_table('users'):
         db.create_all()
-    app.run(debug=True)
+    app.run()
