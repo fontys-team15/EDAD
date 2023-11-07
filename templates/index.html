@@ -1,0 +1,33 @@
+<html>
+    <head>
+        <title>ΣDAD</title>
+
+    </head>
+    <body>
+        <h1>API specification</h1>
+    
+        <h3>Register a new User under <code>/api/users</code></h3>
+        <p>The endpoint accepts a JSON with the following syntax:</p>
+        <pre><code>{"username": "&lt;your username&gt;", "password": "&lt;your password&gt;"}</code></pre>
+    
+        <h3>Request a new token under <code>/api/token</code></h3>
+        <pre><code>curl -u &lt;your username&gt;:&lt;your password&gt; http://url/api/token</code></pre>
+    
+        <h3>Post resource configurations under <code>/api/resource</code></h3>
+        <p>The current format for the JSON configuration is:</p>
+        <pre><code>
+    {
+        "name": "destroyer",
+        "instance_type": "t2.micro",
+        "associate_pub_ip": true
+    }
+        </code></pre>
+        <p>To post your settings use the following command:</p>
+        <pre><code>curl -u &lt;your username | token&gt;:&lt;your password | x&gt; --json @yourfile.json http://url/api/resource</code></pre>
+    
+        <h3>Unregister a User under <code>/api/users/rm</code></h3>
+        <p>Using the following command:</p>
+        <pre><code>curl -u &lt;your username | token&gt;:&lt;your password | x&gt; -X DELETE http://url/api/users/rm</code></pre>
+    </body>
+    
+</html>
