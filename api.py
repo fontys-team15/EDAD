@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-import os
 import time
 import json
 import pyfiglet
-from flask import Flask, abort, request, jsonify, g, url_for
+from flask import Flask,request, jsonify, g, url_for,render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
 import jwt
@@ -21,11 +19,10 @@ auth = HTTPBasicAuth()
 
 # vars
 template_keys = ["name", "instance_type", "associate_pub_ip"]
-
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), index=True)
+    email = db.Column(db.String(32), index=True)
     password_hash = db.Column(db.String(128))
 
     def hash_password(self, password):
@@ -48,36 +45,39 @@ class User(db.Model):
             return
         return User.query.get(data['id'])
 
-
 @app.before_request
 def print_ascii_art():
     print(pyfiglet.figlet_format("u mirin bru?"))
   
 @auth.verify_password
-def verify_password(username_or_token, password):
-    user = User.verify_auth_token(username_or_token)
+def verify_password(email_or_token, password):
+    user = User.verify_auth_token(email_or_token)
     if not user:
-        user = User.query.filter_by(username=username_or_token).first()
+        user = User.query.filter_by(email=email_or_token).first()
         if not user or not user.verify_password(password):
             return False
     g.user = user
     return True
 
 
+@app.route('/')
+def index():
+    return render_template('index.html')
+
 @app.route('/api/users', methods=['POST'])
 def new_user():
-    username = request.json.get('username')
+    email = request.json.get('email')
     password = request.json.get('password')
-    if username is None or password is None:
+    if email is None or password is None:
         return (jsonify({"message": "Missing arguments!"})), 401
-    if User.query.filter_by(username=username).first() is not None:
+    if User.query.filter_by(email=email).first() is not None:
         return (jsonify({'message': "User already exists!"})), 409
-    user = User(username=username)
+    user = User(email=email)
     user.hash_password(password)
     db.session.add(user)
     db.session.commit()
     token = user.generate_auth_token(600)
-    return (jsonify({'message': f"Welcome {user.username}!Please remember ", 'token': token, 'duration': 600  }), 201,
+    return (jsonify({'message': f"Welcome {user.email}!Please remember ", 'token': token, 'duration': 600  }), 201,
             {'Location': url_for('get_user', id=user.id, _external=True)})
 
 
@@ -93,8 +93,7 @@ def get_user(id):
     user = User.query.get(id)
     if not user:
         return jsonify({"message": "User id doesnt exist!"}), 401
-    return jsonify({'username': user.username})
-
+    return jsonify({'email': f'{user.email}'})
 
 @app.route('/api/token')
 @auth.login_required
@@ -111,8 +110,7 @@ def get_resource():
         if key not in template_keys:
             return jsonify({"message": f"Invalid key: {key}"})
     print(json.dumps(data, indent=4, sort_keys=True))
-
-    return jsonify({'data': f'Hello, {g.user.username}! The request was successful!'})
+    return jsonify({'data': f'Hello, {g.user.email}!The request was successful!'})
 
 
 if __name__ == '__main__':
