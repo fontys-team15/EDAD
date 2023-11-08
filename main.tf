@@ -34,6 +34,7 @@ locals {
 resource "aws_vpc" "vpc" {
   for_each = var.vpc
   cidr_block = each.value
+  enable_dns_hostnames = each.key == "web" ? true : false 
 
   tags = {
     Name = each.key
