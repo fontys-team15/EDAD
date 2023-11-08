@@ -116,7 +116,7 @@ def get_resource():
         r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
             "input": "{}",
             "name": "gay",
-            "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
+            "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:MyStateMachine-11pw20640"
     })
     except:
         return r
