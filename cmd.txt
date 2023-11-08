@@ -1,1 +1,1 @@
-sudo mod_wsgi-express start-server wsgi.py --processes 4 --user ubuntu --port 80
+sudo .venv/bin/mod_wsgi-express start-server wsgi.py --processes 4 --user ubuntu --port 80

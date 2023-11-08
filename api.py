@@ -1,6 +1,7 @@
 import time
 import json
 import pyfiglet
+import requests
 from flask import Flask,request, jsonify, g, url_for,render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
@@ -110,7 +111,13 @@ def get_resource():
         if key not in template_keys:
             return jsonify({"message": f"Invalid key: {key}"})
     print(json.dumps(data, indent=4, sort_keys=True))
-    return jsonify({'data': f'Hello, {g.user.email}!The request was successful!'})
+
+    r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
+        "input": "{}",
+        "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
+    })
+
+    return jsonify({'data': f'Hello, {g.user.email}!The request was successful! The step func returned this response: {r}'})
 
 
 if __name__ == '__main__':

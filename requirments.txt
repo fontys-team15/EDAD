@@ -12,3 +12,4 @@ pyfiglet
 cryptography
 PyMySQL
 mod_wsgi
+requests
