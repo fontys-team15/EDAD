@@ -112,11 +112,14 @@ def get_resource():
             return jsonify({"message": f"Invalid key: {key}"})
     print(json.dumps(data, indent=4, sort_keys=True))
 
-    r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
-        "input": "{}",
-        "name": "gay",
-        "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
+    try:
+        r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
+            "input": "{}",
+            "name": "gay",
+            "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
     })
+    except:
+        return r
 
     return jsonify({'data': f'Hello, {g.user.email}!The request was successful! The step func returned this response: {r}'})
 
