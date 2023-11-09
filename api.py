@@ -115,11 +115,11 @@ def get_resource():
     try:
         r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
             "input": "{}",
-            "name": f"{g.user.email}",
+            "name": f"{g.user.email}-{time.time()}",
             "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
     })
-    except:
-        return r
+    except Exception as e:
+        return jsonify({"error": e})        
 
     return jsonify({'data': f'Hello, {g.user.email}!The request was successful! The step func returned this response: {r}'})
 
