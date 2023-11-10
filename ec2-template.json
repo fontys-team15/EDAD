@@ -1,5 +1,7 @@
 {
-    "name": "destroyer",
-    "instance_type": "t2.micro",
-    "associate_pub_ip": true
+    "ec2": {
+	    "name": "destroyer",
+	    "instance_type": "t2.micro",
+	    "associate_pub_ip": true
+    }
 }

@@ -2,6 +2,7 @@ import time
 import json
 import pyfiglet
 import requests
+import jsonschema
 from flask import Flask,request, jsonify, g, url_for,render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_httpauth import HTTPBasicAuth
@@ -19,7 +20,42 @@ db = SQLAlchemy(app)
 auth = HTTPBasicAuth()
 
 # vars
-template_keys = ["name", "instance_type", "associate_pub_ip"]
+VALID_SERVICE_KEYS = ["ec2", "msk"]
+PROPERTY_KEYS_EC2 = {"name": "string", "instance_type": "string", "associate_pub_ip": "boolean"}
+PROPERTY_KEYS_MSK = {"name": "string", "brokers": "integer"}
+
+
+def create_schema(data):
+    service = None
+    for key in data.keys():
+        if key in VALID_SERVICE_KEYS:
+            service = key
+
+    if not service:
+        return False
+
+    property_keys = PROPERTY_KEYS_EC2 if service == "ec2" else PROPERTY_KEYS_MSK
+
+    schema = {
+        "type": "object",
+        "properties": {
+            service: {
+                "type": "object",
+                "properties": {},
+                "required": []
+            }
+        }
+    }
+
+    for k, v in property_keys.items():
+        schema["properties"][service]["required"].append(k)
+        schema["properties"][service]["properties"][k] = {"type": v}
+
+    return schema
+    
+
+
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -107,10 +143,16 @@ def get_auth_token():
 @auth.login_required
 def get_resource():
     data = request.get_json()
-    for key in data.keys():
-        if key not in template_keys:
-            return jsonify({"message": f"Invalid key: {key}"})
-    print(json.dumps(data, indent=4, sort_keys=True))
+    schema = create_schema(data)
+
+    if not schema:
+        return jsonify({"message": "The service is not valid."})
+
+    try:
+        jsonschema.validate(instance=data, schema=schema)
+        return jsonify({"message": "JSON is valid"})
+    except jsonschema.exceptions.ValidationError as e:
+        return jsonify({"error": "JSON is not valid", "details": e.message})
 
     try:
         r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
@@ -121,7 +163,7 @@ def get_resource():
     except Exception as e:
         return jsonify({"error": e})        
 
-    return jsonify({'data': f'Hello, {g.user.email}!The request was successful! The step func returned this response: {r}'})
+    return jsonify({'data': f'Hello, {g.user.email}!The request was successful! The step func returned this response: {"r"}'})
 
 
 if __name__ == '__main__':

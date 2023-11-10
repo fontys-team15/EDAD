@@ -13,3 +13,4 @@ cryptography
 PyMySQL
 mod_wsgi
 requests
+jsonschema
