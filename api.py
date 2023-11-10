@@ -21,21 +21,20 @@ auth = HTTPBasicAuth()
 
 # vars
 VALID_SERVICE_KEYS = ["ec2", "msk"]
-PROPERTY_KEYS_EC2 = {"name": "string", "instance_type": "string", "associate_pub_ip": "boolean"}
-PROPERTY_KEYS_MSK = {"name": "string", "brokers": "integer"}
+PROPERTY_KEYS = {
+    "ec2": {"name": "string", "instance_type": "string", "associate_pub_ip": "boolean"},
+    "msk": {"name": "string", "brokers": "integer"}
+}
 
 
 def create_schema(data):
-    service = None
-    for key in data.keys():
-        if key in VALID_SERVICE_KEYS:
-            service = key
+    service = list(data.keys())[0]
+    service = service if service in VALID_SERVICE_KEYS else None
 
     if not service:
         return False
 
-    property_keys = PROPERTY_KEYS_EC2 if service == "ec2" else PROPERTY_KEYS_MSK
-
+    property_keys = PROPERTY_KEYS[service]
     schema = {
         "type": "object",
         "properties": {
@@ -156,7 +155,7 @@ def get_resource():
 
     try:
         r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
-            "input": "{}",
+            "input": {"email": g.user.email, "data": data},
             "name": f"{g.user.email}-{time.time()}",
             "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
     })
