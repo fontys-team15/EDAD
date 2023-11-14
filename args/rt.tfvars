@@ -61,8 +61,8 @@ rt = [
         {
             vpc_cidr = false
             cidr_block = "0.0.0.0/0"
-            gateway_type = "igw"
-            gateway_id = "web_igw"
+            gateway_type = "ngw"
+            gateway_id = "web_ngw"
         } ]
     },
     {

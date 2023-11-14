@@ -187,7 +187,7 @@ resource "aws_key_pair" "admin_key" {
 resource "aws_instance" "ec2_i" {
   for_each = {for ec in var.ec2 : "${ec.service}-${ec.zone}_ec2" => ec}
 
-  ami = data.aws_ami.ubuntu.id
+  ami = each.value.service == "bh" || each.value.service == "ao" ? "ami-0a485299eeb98b979" : data.aws_ami.ubuntu.id
   instance_type = each.value.instance_type
   availability_zone = "${local.region}-${each.value.zone}"
   associate_public_ip_address = each.value.public_ip
