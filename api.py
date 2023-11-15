@@ -19,30 +19,22 @@ app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 db = SQLAlchemy(app)
 auth = HTTPBasicAuth()
 
-# vars
+# schema
 def create_schema(data):
-    service = list(data.keys())[0]
-    if service:
-        if all(key in data[service] for key in ["brokers", "name"]):
-            schema = {
-                "type": "object",
-                "properties": {
-                    service: {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "brokers": {"type": "integer"}
-                        },
-                        "required": ["name", "brokers"]
-                    }
-                }
-            }
-            return schema
+    if all(key in data for key in ["brokers", "name"]):
+        schema = {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "vpc_cidr": {"type": "string"},
+                "subnet_cidrs": {"type": "array", "items": {"type": "string"}},
+                "brokers": {"type": "integer"},
+                "broker_volume_size": {"type": "integer"}
+            },
+            "required": ["name", "vpc_cidr", "subnet_cidrs", "brokers", "broker_volume_size"]
+        }
+        return schema
     return False
-
-    
-
-
 
 class User(db.Model):
     __tablename__ = 'users'
