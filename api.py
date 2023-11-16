@@ -122,29 +122,22 @@ def get_auth_token():
 @app.route('/api/create', methods=["POST"])
 @auth.login_required
 def create_resource():
-    data = request.get_json()
-    schema = create_schema(data)
+    # data = request.get_json()
+    # schema = create_schema(data)
     
-    if not schema:
-        return jsonify({"message": "The options are not valid."})
+    # if not schema:
+    #     return jsonify({"message": "The options are not valid."})
 
+    # try:
+    #     jsonschema.validate(instance=data, schema=schema)
+    # except jsonschema.exceptions.ValidationError as e:
+    #     return jsonify({"error": "JSON is not valid", "details": e.message})
     try:
-        jsonschema.validate(instance=data, schema=schema)
-    except jsonschema.exceptions.ValidationError as e:
-        return jsonify({"error": "JSON is not valid", "details": e.message})
-
-    try:
-        r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
-            "input": {"email": g.user.email, "data": data},
-            "name": f"{g.user.email}-{time.time()}",
-            "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
-        })
+        r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step")
     except Exception as e:
         return jsonify({"error": str(e)})
 
     return jsonify({'data': f'Hello, {g.user.email}! The request was successful! The step func returned this response: {r.text}'})
-
-
 
 if __name__ == '__main__':
     if not db.engine.has_table('users'):
