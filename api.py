@@ -134,8 +134,8 @@ def get_auth_token():
 @auth.login_required
 def create_resource():
     data = request.get_json()
-    schema = create_schema(data)
     data["email"] = g.user.email
+    schema = create_schema(data)
     json_string = json.dumps(data)
     escaped_json_string = json_string.replace('"', '\\"')
 
