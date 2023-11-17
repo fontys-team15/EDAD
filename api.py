@@ -19,42 +19,34 @@ app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 db = SQLAlchemy(app)
 auth = HTTPBasicAuth()
 
-# vars
-VALID_SERVICE_KEYS = ["ec2", "msk"]
-PROPERTY_KEYS = {
-    "ec2": {"name": "string", "instance_type": "string", "associate_pub_ip": "boolean"},
-    "msk": {"name": "string", "brokers": "integer"}
-}
 
-
-def create_schema(data):
-    service = list(data.keys())[0]
-    service = service if service in VALID_SERVICE_KEYS else None
-
-    if not service:
-        return False
-
-    property_keys = PROPERTY_KEYS[service]
+def create_schema():
     schema = {
         "type": "object",
         "properties": {
-            service: {
-                "type": "object",
-                "properties": {},
-                "required": []
-            }
-        }
+            "email": {"type": "string"},
+            "name": {"type": "string"},
+            "cluster_name": {"type": "string"},
+            "vpc_cidr": {"type": "string", "pattern": "^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$"},
+            "subnet_cidrs": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "cidr": {"type": "string", "pattern": "^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$"},
+                        "availability_zone": {"type": "string"}
+                    },
+                    "required": ["cidr", "availability_zone"]
+                }
+            },
+            "brokers": {"type": "integer"},
+            "broker_volume_size": {"type": "integer"}
+        },
+        "required": ["email", "name", "cluster_name", "vpc_cidr", "subnet_cidrs", "brokers", "broker_volume_size"]
     }
-
-    for k, v in property_keys.items():
-        schema["properties"][service]["required"].append(k)
-        schema["properties"][service]["properties"][k] = {"type": v}
 
     return schema
     
-
-
-
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -143,6 +135,9 @@ def get_auth_token():
 def get_resource():
     data = request.get_json()
     schema = create_schema(data)
+    data["email"] = g.user.email
+    json_string = json.dumps(data)
+    escaped_json_string = json_string.replace('"', '\\"')
 
     if not schema:
         return jsonify({"message": "The service is not valid."})
@@ -155,9 +150,9 @@ def get_resource():
 
     try:
         r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
-            "input": {"email": g.user.email, "data": data},
+            "input": escaped_json_string,
             "name": f"{g.user.email}-{time.time()}",
-            "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreditCardWorkflow"
+            "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreateMSK"
     })
     except Exception as e:
         return jsonify({"error": e})        
