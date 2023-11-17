@@ -130,9 +130,9 @@ def get_auth_token():
     return jsonify({'token': token, 'duration': 600})
 
 
-@app.route('/api/resource', methods=["POST"])
+@app.route('/api/create', methods=["POST"])
 @auth.login_required
-def get_resource():
+def create_resource():
     data = request.get_json()
     schema = create_schema(data)
     data["email"] = g.user.email
@@ -140,11 +140,10 @@ def get_resource():
     escaped_json_string = json_string.replace('"', '\\"')
 
     if not schema:
-        return jsonify({"message": "The service is not valid."})
+        return jsonify({"message": "The options are not valid."})
 
     try:
         jsonschema.validate(instance=data, schema=schema)
-        return jsonify({"message": "JSON is valid"})
     except jsonschema.exceptions.ValidationError as e:
         return jsonify({"error": "JSON is not valid", "details": e.message})
 
@@ -155,9 +154,10 @@ def get_resource():
             "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreateMSK"
     })
     except Exception as e:
-        return jsonify({"error": e})        
+        return jsonify({"error": str(e)})
 
-    return jsonify({'data': f'Hello, {g.user.email}!The request was successful! The step func returned this response: {"r"}'})
+    return jsonify({'data': f'Hello, {g.user.email}! The request was successful! The step func returned this response: {r.text}'})
+
 
 
 if __name__ == '__main__':
