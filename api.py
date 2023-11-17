@@ -26,7 +26,6 @@ def create_schema():
         "properties": {
             "email": {"type": "string"},
             "name": {"type": "string"},
-            "cluster_name": {"type": "string"},
             "vpc_cidr": {"type": "string", "pattern": "^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$"},
             "subnet_cidrs": {
                 "type": "array",
@@ -42,7 +41,7 @@ def create_schema():
             "brokers": {"type": "integer"},
             "broker_volume_size": {"type": "integer"}
         },
-        "required": ["email", "name", "cluster_name", "vpc_cidr", "subnet_cidrs", "brokers", "broker_volume_size"]
+        "required": ["email", "name", "vpc_cidr", "subnet_cidrs", "brokers", "broker_volume_size"]
     }
 
     return schema
@@ -135,7 +134,7 @@ def get_auth_token():
 def create_resource():
     data = request.get_json()
     data["email"] = g.user.email
-    schema = create_schema(data)
+    schema = create_schema()
     json_string = json.dumps(data)
     escaped_json_string = json_string.replace('"', '\\"')
 
