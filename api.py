@@ -133,7 +133,7 @@ def create_resource():
     data = request.get_json()
     data["email"] = g.user.email
     json_string = json.dumps(data)
-    escaped_json_string = json_string.replace('"', '\\"')
+    escaped_json_string = json_string.replace('"', '\"')
 
     try:
         jsonschema.validate(instance=data, schema=SCHEMA)
@@ -150,6 +150,12 @@ def create_resource():
     except Exception as e:
         return jsonify({"error": str(e)})
 
+    print({
+            "input": str(escaped_json_string),
+            "name": f"{g.user.email}-{time.time()}",
+            "stateMachineArn": "arn:aws:states:eu-central-1:657026912035:stateMachine:CreateMSK"
+    })
+
     return jsonify({'data': f'Hello, {g.user.email}! The request was successful! The step func returned this response: {r.text}'})
 
 
@@ -157,4 +163,4 @@ def create_resource():
 if __name__ == '__main__':
     if not db.engine.has_table('users'):
         db.create_all()
-    app.run()
+    app.run(debug=True)
