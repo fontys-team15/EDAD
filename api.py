@@ -135,8 +135,7 @@ def create_resource():
     data = request.get_json()
     data["email"] = g.user.email
     schema = create_schema()
-    json_string = json.dumps(data)
-    escaped_json_string = json_string.replace('"', '\\"')
+    escaped_json_string = data.replace('"', '\\"')
 
     try:
         jsonschema.validate(instance=data, schema=schema)
