@@ -129,35 +129,5 @@ sg = [
                 vpc_cidr = false
             }
         ]
-    },
-     {
-        vpc = "ao"
-        service = "ao"
-        ingress = [
-            {
-                servicel = "bh"
-                vpcl = "web"
-                public = true
-                zone = "1c"
-                vpc_cidr = false
-                from_port = 22
-                to_port = 22
-                protocol = "tcp" 
-                cidr = "0.0.0.0/0"
-            }
-        ]
-        egress = [
-            {
-                servicel = ""
-                vpcl = "ao"
-                from_port = 0 
-                to_port = 0
-                protocol = "-1"
-                cidr = "0.0.0.0/0"
-                public = false
-                zone = ""
-                vpc_cidr = false
-            }
-        ]
     }
 ]

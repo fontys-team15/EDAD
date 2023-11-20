@@ -47,26 +47,5 @@ subnets = [
         cidr_block = "172.16.0.128/25"
         zone = "1b"
         public = false
-    }, #ao
-    {
-        vpc = "ao"
-        service = "ao"
-        cidr_block = "192.168.0.0/28"
-        zone = "1a"
-        public = false
-    },
-    {
-        vpc = "ao"
-        service = "ao"
-        cidr_block = "192.168.0.16/28"
-        zone = "1b"
-        public = false
-    },
-    {
-        vpc = "ao"
-        service = "nat"
-        cidr_block = "192.168.0.32/28"
-        zone = "1c"
-        public = true
     }
 ]

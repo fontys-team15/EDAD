@@ -6,10 +6,6 @@ rt_main = [
     {
         vpc = "rds"
         service = "rds"
-    },
-    {
-        vpc = "ao"
-        service = "ao"
     }
 ]
 
@@ -31,11 +27,5 @@ rt_ex = [
         service = "alb"
         zone = "1b"
         public = true
-    },
-    {
-        vpc = "ao"
-        service = "nat"
-        zone = "1c"
-        public = true
-    } 
+    }
 ]

@@ -24,13 +24,11 @@ variable "vpc" {
   type = object({
     web = string
     rds = string
-    ao = string
   })
 
   default = {
     web = "10.0.0.0/16"
     rds = "172.16.0.0/24"
-    ao = "192.168.0.0/24"
   }
 }
 
@@ -60,7 +58,7 @@ variable "ec2" {
 
 variable "eip" {
   type = list(string)
-  default = [ "web_ngw_eip", "ao_ngw_eip" ]
+  default = [ "web_ngw_eip"]
 }
 
 # gateways
