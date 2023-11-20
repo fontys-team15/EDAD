@@ -10,6 +10,6 @@
 	    "cidr": "10.0.1.0/24",
 	    "availability_zone": "eu-central-1b"}
     ],
-    "brokers": 2
+    "brokers": 2,
     "broker_volume_size": 1
 }
