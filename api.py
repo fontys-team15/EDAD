@@ -20,31 +20,29 @@ db = SQLAlchemy(app)
 auth = HTTPBasicAuth()
 
 
-def create_schema():
-    schema = {
-        "type": "object",
-        "properties": {
-            "email": {"type": "string"},
-            "name": {"type": "string"},
-            "vpc_cidr": {"type": "string"},
-            "subnet_cidrs": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "cidr": {"type": "string"},
-                        "availability_zone": {"type": "string"}
-                    },
-                    "required": ["cidr", "availability_zone"]
-                }
-            },
-            "brokers": {"type": "integer"},
-            "broker_volume_size": {"type": "integer"}
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "email": {"type": "string"},
+        "cluster_name": {"type": "string"},
+        "vpc_cidr": {"type": "string"},
+        "subnet_cidrs": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "cidr": {"type": "string"},
+                    "availability_zone": {"type": "string"}
+                },
+                "required": ["cidr", "availability_zone"]
+            }
         },
-        "required": ["email", "name", "vpc_cidr", "subnet_cidrs", "brokers", "broker_volume_size"]
-    }
+        "brokers": {"type": "integer"},
+        "broker_volume_size": {"type": "integer"}
+    },
+    "required": ["email", "cluster_name", "vpc_cidr", "subnet_cidrs", "brokers", "broker_volume_size"]
+}
 
-    return schema
     
 class User(db.Model):
     __tablename__ = 'users'
@@ -134,14 +132,15 @@ def get_auth_token():
 def create_resource():
     data = request.get_json()
     data["email"] = g.user.email
-    schema = create_schema()
-    escaped_json_string = data.replace('"', '\\"')
+    json_string = json.dumps(data)
+    escaped_json_string = json_string.replace('"', '\\"')
 
     try:
-        jsonschema.validate(instance=data, schema=schema)
+        jsonschema.validate(instance=data, schema=SCHEMA)
     except jsonschema.exceptions.ValidationError as e:
         return jsonify({"error": "JSON is not valid", "details": e.message})
 
+    
     try:
         r = requests.post("https://pb0w7r2ew5.execute-api.eu-central-1.amazonaws.com/1/step", json={
             "input": escaped_json_string,
