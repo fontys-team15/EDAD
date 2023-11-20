@@ -26,13 +26,13 @@ def create_schema():
         "properties": {
             "email": {"type": "string"},
             "name": {"type": "string"},
-            "vpc_cidr": {"type": "string", "pattern": "^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$"},
+            "vpc_cidr": {"type": "string"},
             "subnet_cidrs": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "cidr": {"type": "string", "pattern": "^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$"},
+                        "cidr": {"type": "string"},
                         "availability_zone": {"type": "string"}
                     },
                     "required": ["cidr", "availability_zone"]
@@ -137,9 +137,6 @@ def create_resource():
     schema = create_schema()
     json_string = json.dumps(data)
     escaped_json_string = json_string.replace('"', '\\"')
-
-    if not schema:
-        return jsonify({"message": "The options are not valid."})
 
     try:
         jsonschema.validate(instance=data, schema=schema)
