@@ -84,11 +84,14 @@ def getCredentialsForIdentity(identityID, idToken):
 
 def lambda_handler(event, context):
     cgrant = event
-    idToken = exchangeCodeGrant(cgrant)["id_token"]
+    tokens = exchangeCodeGrant(cgrant)
+    accessToken = tokens["access_token"]
+    idToken = tokens["id_token"]
     identityId = getId(identityPoolId, idToken)["IdentityId"]
     creds = getCredentialsForIdentity(identityId, idToken)
     return {
         'status': 200,
+        'access_token': accessToken,
         'id_token': idToken,
         'creds': creds
     }
