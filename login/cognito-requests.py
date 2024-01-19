@@ -89,6 +89,7 @@ def lambda_handler(event, context):
     creds = getCredentialsForIdentity(identityId, idToken)
     return {
         'status': 200,
+        'id_token': idToken,
         'creds': creds
     }
 
