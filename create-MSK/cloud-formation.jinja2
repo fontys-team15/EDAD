@@ -1,0 +1,49 @@
+Description: 'deploy MSK'
+
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: {{vpc_cidr}}
+
+{% for subnet_info in subnet_cidrs %}
+  Subnet{{ loop.index }}:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: {{ subnet_info.availability_zone }}
+      CidrBlock: {{ subnet_info.cidr }}
+      VpcId: !Ref VPC
+{% endfor %}
+
+  SecurityGroups:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: "Allow HTTP"
+      GroupName: "MSK-sec-group"
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: '0.0.0.0/0'
+      VpcId: !Ref VPC
+
+  MSK:
+    Type: 'AWS::MSK::Cluster'
+    Properties:
+      BrokerNodeGroupInfo:
+        ClientSubnets:
+        {% for cidr in subnet_cidrs %}
+          - !Ref Subnet{{ loop.index }}
+        {% endfor %}
+        InstanceType: 'kafka.t3.small'
+        SecurityGroups: [!Ref SecurityGroups]
+      ClusterName: {{name}}
+      KafkaVersion: "3.6.0"
+      NumberOfBrokerNodes: {{brokers}}
+      Tags:
+        Name: '{{name}}'
