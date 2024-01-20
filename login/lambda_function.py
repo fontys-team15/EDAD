@@ -1,4 +1,3 @@
-#!/bin/python3
 import requests
 import json
 
@@ -11,7 +10,7 @@ TOKEN_BODY = {
     'grant_type': 'authorization_code',
     'client_id': '7islnjaa6l6ch9ughu2v1v7cj7',
     'code': "",
-    'redirect_uri': 'https://www.google.com',
+    'redirect_uri': 'https://api.sigmadad.fitness/',
     'scope': 'auth/msk'
 }
 
@@ -70,16 +69,24 @@ def getCredentialsForIdentity(identityID, idToken):
         raise
 
 def lambda_handler(event, context):
-    cgrant = event
+    cgrant = event["queryStringParameters"]["code"]
+    print(cgrant)
     tokens = exchangeCodeGrant(cgrant)
-    accessToken = tokens["access_token"]
+    print(tokens)
     idToken = tokens["id_token"]
     identityId = getId(identityPoolId, idToken)["IdentityId"]
     creds = getCredentialsForIdentity(identityId, idToken)
-    return {
-        'status': 200,
-        'access_token': accessToken,
+
+    print(creds)
+
+    body = {
         'id_token': idToken,
-        'creds': creds
+        'access_key': creds["Credentials"]["AccessKeyId"],
+        'secret_key': creds["Credentials"]["SecretKey"],
+        'session_token': creds["Credentials"]["SessionToken"]
     }
-#print(lambda_handler(input(),3))
+    print("JSON: ", body)
+    return {
+        "statusCode": 200,
+        "body": json.dumps(body)
+    }
