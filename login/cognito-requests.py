@@ -24,12 +24,10 @@ IDP_HEADERS_GETID = {
     'X-AMZ-TARGET': 'com.amazonaws.cognito.identity.model.AWSCognitoIdentityService.GetId'
 }
 
-# Modify the Action variable for GetCredentialsForIdentity
 IDP_HEADERS_GETCREDS = {
     'CONTENT-TYPE': 'application/x-amz-json-1.1', 
     'X-AMZ-TARGET': 'com.amazonaws.cognito.identity.model.AWSCognitoIdentityService.GetCredentialsForIdentity'
 }
-
 
 
 def exchangeCodeGrant(cgrant: str):
@@ -47,17 +45,12 @@ def getId(idpID, idToken):
     }
 
     try:
-        # Make the request
         r = requests.post(COGNITO_IDP_ENDPOINT, headers=IDP_HEADERS_GETID, data=json.dumps(GETID_BODY))
-
-        # Print the JSON response
-        print(r.json())
-
-        # Return the JSON response
+        #print(r.json())
         return r.json()
     except Exception as e:
         print(f"Error: {e}")
-        raise  # Re-raise the exception to propagate it further
+        raise
 
 def getCredentialsForIdentity(identityID, idToken):
     GETCREDS_BODY = {
@@ -69,18 +62,12 @@ def getCredentialsForIdentity(identityID, idToken):
 
     print(json.dumps(GETCREDS_BODY))
     try:
-        # Make the request
-
         r = requests.post(COGNITO_IDP_ENDPOINT, headers=IDP_HEADERS_GETCREDS, data=json.dumps(GETCREDS_BODY))
-
-        # Print the JSON response
-        print(r.json())
-
-        # Return the JSON response
+        #print(r.json())
         return r.json()
     except Exception as e:
         print(f"Error: {e}")
-        raise  # Re-raise the exception to propagate it further
+        raise
 
 def lambda_handler(event, context):
     cgrant = event
@@ -95,6 +82,4 @@ def lambda_handler(event, context):
         'id_token': idToken,
         'creds': creds
     }
-
-
-print(lambda_handler(input(),3))
+#print(lambda_handler(input(),3))
