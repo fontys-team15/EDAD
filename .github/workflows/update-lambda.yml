@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   configure-credentials:
-    #    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -26,7 +26,11 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Print Python version
-        run: python --version
+      - name: Install dependencies
+        run: python -m pip install -r requirements --target .
+      - name: Packiging
+        run: zip package.zip .
+      - name: Print contents of the archive
+        run: 7z l package.zip
     needs: [configure-credentials]
 
