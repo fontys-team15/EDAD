@@ -1,5 +1,7 @@
 name: Deploy Lambda code on push
-on: [workflow_dispatch, push]
+on: 
+  - workflow_dispatch
+  - push
   branches:
     - 'lambda_test'
 permissions:
