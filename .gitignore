@@ -1,4 +1,4 @@
-.terraform/
-*.backup
-*.tfstate
 *venv
+.terraform
+*.zip
+__pycache__
