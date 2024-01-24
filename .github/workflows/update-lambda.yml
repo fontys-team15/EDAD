@@ -1,8 +1,7 @@
 name: Deploy Lambda code on push
-on: workflow_dispatch
-  #  push:
-  #  branches:
-  #    - 'lambda_test'
+on: [workflow_dispatch, push]
+  branches:
+    - 'lambda_test'
 permissions:
   id-token: write
   contents: read 
