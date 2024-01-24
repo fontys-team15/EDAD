@@ -1,8 +1,8 @@
 name: Deploy Lambda code on push
-on: workflow_dispatch
-  #  push:
-  #  branches:
-  #    - 'lambda_test'
+on: 
+  push:
+    branches:
+      - 'lambda_test'
 permissions:
   id-token: write
   contents: read 
@@ -28,4 +28,5 @@ jobs:
           python-version: '3.12'
       - name: Print Python version
         run: python --version
+    needs: [configure-credentials]
 
