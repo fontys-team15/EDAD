@@ -33,6 +33,6 @@ jobs:
       - name: Print contents of the archive
         run: 7z l package.zip
       - name: Deploy the package
-        run: aws lambda update-function-code --function-name CICD-asgmt --zip-file package.zip
+        run: aws lambda update-function-code --function-name CICD-asgmt --zip-file fileb://package.zip
     needs: [configure-credentials]
 
