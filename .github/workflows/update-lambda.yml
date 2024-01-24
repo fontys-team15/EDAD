@@ -1,29 +1,31 @@
 name: Deploy Lambda code on push
 on:
   push:
-    branches: lambda_test
+    branches:
+      - lambda_test
 permissions:
   id-token: write
   contents: read 
 
 jobs:
   configure-credentials:
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
-      with:
-        role-to-assume: arn:aws:iam::657026912035:role/GitHub-Lambda
-        aws-region: eu-central-1
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::657026912035:role/GitHub-Lambda
+          aws-region: eu-central-1
 
   build:
-    - name: Create a deployment package
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4 # automatically checks out the branch that triggered the Action
-        - uses: actions/setup-python@v5
-          with:
-            python-version: '3.12' 
-        - name: Print python version
-          run: python --version 
-
-
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create a deployment package
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Print Python version
+        run: python --version
 
