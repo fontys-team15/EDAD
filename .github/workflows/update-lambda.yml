@@ -28,5 +28,4 @@ jobs:
         run: zip -r package .
       - name: Deploy the package
         run: aws lambda update-function-code --function-name CICD-asgmt --zip-file fileb://package.zip --region "eu-central-1"
-    needs: [configure-credentials]
 
