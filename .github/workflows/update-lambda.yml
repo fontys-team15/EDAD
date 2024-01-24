@@ -8,7 +8,7 @@ permissions:
   contents: read 
 
 jobs:
-  configure-credentials:
+  build:
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS Credentials
@@ -16,10 +16,6 @@ jobs:
         with:
           role-to-assume: arn:aws:iam::657026912035:role/GitHub-Lambda
           aws-region: eu-central-1
-
-  build:
-    runs-on: ubuntu-latest
-    steps:
       - name: Create a deployment package
         uses: actions/checkout@v4
       - name: Set up Python
@@ -30,8 +26,6 @@ jobs:
         run: python -m pip install -r requirements.txt --target .
       - name: Packiging
         run: zip -r package .
-      - name: Print contents of the archive
-        run: 7z l package.zip
       - name: Deploy the package
         run: aws lambda update-function-code --function-name CICD-asgmt --zip-file fileb://package.zip --region "eu-central-1"
     needs: [configure-credentials]
