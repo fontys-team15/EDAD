@@ -27,7 +27,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install dependencies
-        run: python -m pip install -r requirements --target .
+        run: python -m pip install -r requirements.txt --target .
       - name: Packiging
         run: zip package.zip .
       - name: Print contents of the archive
