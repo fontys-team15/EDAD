@@ -11,14 +11,15 @@ def read_template_from_file():
     s3_obj["Body"].close()
     return template.decode("utf-8")
 
-def render_template(template_content, hostname):
+def render_template(template_content, hostname, name):
     template = Template(template_content)
-    rendered_content = template.render(hostname = hostname)
+    rendered_content = template.render(hostname = hostname, name = name)
     return rendered_content
 
 def lambda_handler(event, context):
+    name = event["name"]
     template_content = read_template_from_file()
-    rendered_content = render_template(template_content, socket.gethostname())
+    rendered_content = render_template(template_content, socket.gethostname(), name)
 
     return {
         "statusCode": 200,
