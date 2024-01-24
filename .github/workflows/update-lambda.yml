@@ -2,7 +2,7 @@ name: Deploy Lambda code on push
 on:
   push:
     branches:
-    - lambda_test
+      - 'lambda_test'
 permissions:
   id-token: write
   contents: read 
