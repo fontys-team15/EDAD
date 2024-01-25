@@ -3,3 +3,6 @@
 *.tfstate
 *venv
 *.zip
+docs/work-process/*
+!docs/work-process/main.pdf
+
