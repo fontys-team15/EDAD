@@ -5,4 +5,5 @@
 *.zip
 docs/work-process/*
 !docs/work-process/main.pdf
+!docs/work-process/main.tex
 
